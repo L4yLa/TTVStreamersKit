@@ -1,0 +1,31 @@
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <horizontal spacing='3' pad-top='2' horizontal-fit='PreferredSize' vertical-fit='PreferredSize' child-expand-width='false' child-control-width='true'>
+    <!-- child-control-height を true にしないと、一覧（LayoutElement で大きさを決める）の高さが 0 になる -->
+    <vertical pref-width='86' spacing='1' child-control-height='true' child-expand-height='false' vertical-fit='PreferredSize'>
+      <text text='~title-text' font-size='5' align='Center' pref-height='6' />
+      <list id='list' select-cell='select-cell' visible-cells='6' cell-size='9' list-width='84' show-scrollbar='true' />
+      <text text='~detail-text' font-size='3.2' align='TopLeft' word-wrapping='true' pref-width='84' pref-height='14' />
+    </vertical>
+    <vertical pref-width='38' spacing='1' child-control-height='true' child-expand-height='false' vertical-fit='PreferredSize'>
+      <button text='{{Play|再生}}' on-click='play' interactable='~can-play' pref-width='38' pref-height='8' />
+      <button text='{{Skip|スキップ}}' on-click='skip' interactable='~can-skip' pref-width='38' pref-height='8' />
+      <button text='{{Block|ブロック}}' on-click='block' interactable='~can-block' pref-width='38' pref-height='8' />
+      <button text='{{Move up|1つ上}}' on-click='move-up' interactable='~can-move' pref-width='38' pref-height='8' />
+      <button text='{{Move down|1つ下}}' on-click='move-down' interactable='~can-move' pref-width='38' pref-height='8' />
+      <button text='~history-button-text' on-click='toggle-history' pref-width='38' pref-height='8' />
+      <button text='~open-button-text' on-click='toggle-open' pref-width='38' pref-height='8' />
+      <button text='{{Search / command|検索とコマンド}}' click-event='show-keyboard' pref-width='38' pref-height='8'
+              hover-hint='{{Searches BeatSaver. Text starting with ! runs as a command|語を入れると BeatSaver を検索します ! で始めるとコマンドとして実行します}}' />
+    </vertical>
+  </horizontal>
+  <modal-keyboard show-event='show-keyboard' value='keyboard-text' on-enter='keyboard-enter' clear-on-open='true' />
+  <modal show-event='show-confirm' hide-event='hide-confirm' move-to-center='true' click-off-closes='true' size-delta-x='70' size-delta-y='30'>
+    <vertical pad='4' spacing='3' child-control-height='true' child-expand-height='false'>
+      <text text='~confirm-text' font-size='4.5' align='Center' word-wrapping='true' pref-width='62' pref-height='12' />
+      <horizontal spacing='4' horizontal-fit='PreferredSize'>
+        <button text='{{Yes|はい}}' on-click='confirm-yes' pref-width='24' />
+        <button text='{{No|いいえ}}' click-event='hide-confirm' pref-width='24' />
+      </horizontal>
+    </vertical>
+  </modal>
+</bg>

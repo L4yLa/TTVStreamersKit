@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/beat-saber-modding-group/BSIPA-MetadataFileSchema/master/Schema.json",
+  "id": "TTVStreamersKit",
+  "name": "TTVStreamersKit",
+  "author": "L4yLa",
+  "version": "0.1.0",
+  "description": "Chat display, song requests and emote effects for streamers. Uses TTVCore for Twitch.",
+  "gameVersion": "1.44.1",
+  "dependsOn": {
+    "BSIPA": "^4.3.7",
+    "BeatSaberMarkupLanguage": "^1.14.1",
+    "SiraUtil": "^3.3.1",
+    "CameraUtils": "^1.0.8",
+    "SongCore": "^3.16.0",
+    "TTVCore": "^0.1.0"
+  }
+}

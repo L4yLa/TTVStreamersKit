@@ -1,0 +1,35 @@
+<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <clickable-image id='settings-icon' src='TTVStreamersKit.Resources.settings-icon.png' click-event='show-settings' ignore-layout='true' anchor-min-x='0.96' anchor-max-x='0.96' anchor-min-y='0.04' anchor-max-y='0.04' size-delta-x='7' preserve-aspect='true' default-color='#FFFFFF11' highlight-color='#FFFFFFFF'></clickable-image>
+  <vertical ignore-layout='true'>
+    <modal id='settings-modal' show-event='show-settings' hide-event='hide-settings' move-to-center='true' click-off-closes='true' size-delta-x='~settings-width' size-delta-y='100'>
+      <vertical child-control-height='false' child-expand-height='false' pad-top='6'>
+        <tab-selector tab-tag='settings-tab'></tab-selector>
+        <vertical pad-top='77'>
+          <button text='{{Close|閉じる}}' click-event='hide-settings'></button>
+        </vertical>
+        <tab tags='settings-tab' tab-name='{{Display|表示}}'>
+          <vertical pad='10' pad-top='5' child-control-height='false' child-expand-height='false' child-align='UpperCenter' pref-width='~settings-width'>
+            <bool-setting text='{{Allow movement|位置を動かせるようにする}}' pref-height='6' value='allow-movement' apply-on-change='true' bind-value='true'></bool-setting>
+            <bool-setting text='{{Same position in menu and song|メニューと曲中で同じ位置にする}}' pref-height='6' value='sync-orientation' apply-on-change='true' bind-value='true'></bool-setting>
+            <bool-setting text='{{Newest messages on top|新しいメッセージを上に表示}}' pref-height='6' value='reverse-chat-order' apply-on-change='true' bind-value='true'></bool-setting>
+            <bool-setting text='{{Show timestamps|時刻を表示}}' pref-height='6' value='show-timestamp' apply-on-change='true' bind-value='true'></bool-setting>
+            <bool-setting text='{{Show badges|バッジを表示}}' pref-height='6' value='show-badges' apply-on-change='true' bind-value='true'></bool-setting>
+            <slider-setting text='{{Width|幅}}' min='5' max='1000' increment='5' pref-height='6' value='chat-width' apply-on-change='true' integer-only='true' bind-value='true'></slider-setting>
+            <slider-setting text='{{Height|高さ}}' min='5' max='1000' increment='5' pref-height='6' value='chat-height' apply-on-change='true' integer-only='true' bind-value='true'></slider-setting>
+            <slider-setting text='{{Font size|文字の大きさ}}' min='2' max='6' increment='0.1' pref-height='6' value='font-size' apply-on-change='true' bind-value='true'></slider-setting>
+            <dropdown-list-setting text='{{Chat visible on|チャットの表示対象}}' value='layer-type' choices='layer-types' formatter='layer-formatter' apply-on-change='true' bind-value='true'></dropdown-list-setting>
+          </vertical>
+        </tab>
+        <tab tags='settings-tab' tab-name='{{Colors|色}}'>
+          <vertical pad='10' pad-top='5' child-control-height='false' child-expand-height='false' child-align='UpperCenter' pref-width='~settings-width'>
+            <color-setting id='background-color-setting' value='background-color' text='{{Background|背景}}' apply-on-change='true'></color-setting>
+            <color-setting id='accent-color-setting' value='accent-color' text='{{Accent|アクセント}}' apply-on-change='true'></color-setting>
+            <color-setting id='highlight-color-setting' value='highlight-color' text='{{Highlight|ハイライト}}' apply-on-change='true'></color-setting>
+            <color-setting id='ping-color-setting' value='ping-color' text='{{Mention|メンション}}' apply-on-change='true'></color-setting>
+            <color-setting id='text-color-setting' value='text-color' text='{{Text|文字}}' apply-on-change='true'></color-setting>
+          </vertical>
+        </tab>
+      </vertical>
+    </modal>
+  </vertical>
+</bg>

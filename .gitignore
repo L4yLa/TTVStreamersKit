@@ -1,0 +1,45 @@
+# ビルド出力
+bin/
+obj/
+release/
+build.log
+
+# 環境ごとの設定
+*.csproj.user
+*.user
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
+*.userprefs
+
+# Unity
+unity/*/Library/
+unity/*/Logs/
+unity/*/Temp/
+unity/*/UserSettings/
+unity/*/obj/
+unity/*/*.csproj
+unity/*/*.sln
+unity/*/.vs/
+unity/*/Assets/Generated/
+unity/*/Assets/Generated.meta
+unity/*/Assets/TextMesh Pro/
+unity/*/Assets/TextMesh Pro.meta
+unity-build-*.log
+
+# unity/project-6000 のこれらは build-bundle.ps1 が unity/project からコピーする
+unity/project-6000/Assets/Editor/
+unity/project-6000/Assets/Editor.meta
+unity/project-6000/Assets/Fonts/
+unity/project-6000/Assets/Fonts.meta
+unity/project-6000/Assets/Materials/
+unity/project-6000/Assets/Materials.meta
+unity/project-6000/Assets/Shaders/
+unity/project-6000/Assets/Shaders.meta
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

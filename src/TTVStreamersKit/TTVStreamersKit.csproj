@@ -1,0 +1,208 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputPath>bin\$(BSTarget)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(BSTarget)\$(Configuration)\</IntermediateOutputPath>
+    <ManifestPath>Manifests\$(BSTarget)\manifest.json</ManifestPath>
+  </PropertyGroup>
+
+  <!-- 版によって API が異なる箇所は BS_1_40_8 / BS_1_44_1 で切り替える。 -->
+  <PropertyGroup Condition="'$(BSTarget)' == '1.40.8'">
+    <DefineConstants>$(DefineConstants);BS_1_40_8</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BSTarget)' == '1.44.1'">
+    <DefineConstants>$(DefineConstants);BS_1_44_1</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- BSIPA は末尾が .manifest.json の埋め込みリソースを探すため、名前は版によらず固定する。 -->
+    <None Remove="Manifests\**" />
+    <EmbeddedResource Include="Manifests\$(BSTarget)\manifest.json" LogicalName="TTVStreamersKit.manifest.json" />
+    <None Remove="Chat\*.bsml" />
+    <EmbeddedResource Include="Chat\ChatDisplay.bsml" LogicalName="TTVStreamersKit.Chat.ChatDisplay.bsml" />
+    <None Remove="UI\*.bsml" />
+    <EmbeddedResource Include="UI\SettingsView.bsml" LogicalName="TTVStreamersKit.UI.SettingsView.bsml" />
+    <EmbeddedResource Include="UI\RequestSettingsView.bsml" LogicalName="TTVStreamersKit.UI.RequestSettingsView.bsml" />
+    <EmbeddedResource Include="UI\EmoteSettingsView.bsml" LogicalName="TTVStreamersKit.UI.EmoteSettingsView.bsml" />
+    <None Remove="Requests\UI\*.bsml" />
+    <EmbeddedResource Include="Requests\UI\QueueView.bsml" LogicalName="TTVStreamersKit.Requests.UI.QueueView.bsml" />
+    <None Remove="Resources\**" />
+    <EmbeddedResource Include="Resources\settings-icon.png" LogicalName="TTVStreamersKit.Resources.settings-icon.png" />
+    <!-- tools/make_history_cover.py で作る -->
+    <EmbeddedResource Include="Resources\history-cover.png" LogicalName="TTVStreamersKit.Resources.history-cover.png" />
+    <!-- unity/ と build-bundle.ps1 で作る。版ごとに対応する Unity で生成したものを使う -->
+    <EmbeddedResource Include="Resources\$(BSTarget)\ttvstreamerskit.bundle"
+                      LogicalName="TTVStreamersKit.Resources.ttvstreamerskit.bundle"
+                      Condition="Exists('Resources\$(BSTarget)\ttvstreamerskit.bundle')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BeatSaberModdingTools.Tasks" Version="2.0.0-beta7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreFontEngineModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HMUI">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\HMUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HMLib">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\HMLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- BeatmapCharacteristicSO などの基底クラス -->
+    <Reference Include="BGLib.UnityExtension">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.UnityExtension.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- Unity のモジュールが参照する netstandard 2.1。.NET Framework 4.8 の Facades は 2.0 のため、ゲームのものを使う -->
+    <Reference Include="netstandard">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\netstandard.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- 難易度などの切り替えのボタン（名前空間は HMUI） -->
+    <Reference Include="SegmentedControl">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\SegmentedControl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- SegmentedControl のセルの基底クラス（名前空間は HMUI） -->
+    <Reference Include="Interactable">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Interactable.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- ViewController / FlowCoordinator（名前空間は HMUI） -->
+    <Reference Include="BeatSaber.ViewSystem">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatSaber.ViewSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Main">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- BSML の FloatingScreen の型が参照する -->
+    <Reference Include="VRUI">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\VRUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- BeatmapLevel、BeatmapLevelPack など -->
+    <Reference Include="DataModels">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BeatmapCore">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BeatmapCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Zenject">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Zenject-usage">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IPA.Loader">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BSML">
+      <HintPath>$(BeatSaberDir)\Plugins\BSML.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SiraUtil">
+      <HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CameraUtils">
+      <HintPath>$(BeatSaberDir)\Plugins\CameraUtils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(BeatSaberDir)\Libs\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="SongCore">
+      <HintPath>$(BeatSaberDir)\Plugins\SongCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="TTVCore">
+      <HintPath>$(BeatSaberDir)\Plugins\TTVCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="TSK_ValidateTarget" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(BSTarget)' != '1.40.8' AND '$(BSTarget)' != '1.44.1'"
+           Text="Unsupported BSTarget '$(BSTarget)'. Use Platform BS1.40.8 or BS1.44.1." />
+    <Error Condition="'$(BeatSaberDir)' == ''"
+           Text="BeatSaberDir is not set. Copy TTVStreamersKit.csproj.user.example to TTVStreamersKit.csproj.user and set the Beat Saber folder for each game version." />
+    <Error Condition="!Exists('$(ManifestPath)')"
+           Text="Manifest not found: $(ManifestPath)" />
+    <Error Condition="!Exists('$(BeatSaberDir)\Plugins\TTVCore.dll')"
+           Text="TTVCore.dll was not found in '$(BeatSaberDir)\Plugins'. Build TTVCore for $(BSTarget) and copy it there first." />
+
+    <!-- BeatSaberVersion.txt の例: 1.44.1_20239 -->
+    <PropertyGroup>
+      <_TskGameVersionFile>$(BeatSaberDir)\BeatSaberVersion.txt</_TskGameVersionFile>
+      <_TskGameVersionRaw Condition="Exists('$(_TskGameVersionFile)')">$([System.IO.File]::ReadAllText('$(_TskGameVersionFile)').Trim())</_TskGameVersionRaw>
+      <_TskGameVersion Condition="'$(_TskGameVersionRaw)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(_TskGameVersionRaw)', '_.*$', ''))</_TskGameVersion>
+    </PropertyGroup>
+    <Error Condition="'$(_TskGameVersion)' != '' AND '$(_TskGameVersion)' != '$(BSTarget)'"
+           Text="BeatSaberDir '$(BeatSaberDir)' is game version $(_TskGameVersion), but BSTarget is $(BSTarget). Point BeatSaberDir to a $(BSTarget) instance (see TTVStreamersKit.csproj.user)." />
+    <Warning Condition="'$(_TskGameVersion)' == ''"
+             Text="BeatSaberVersion.txt was not found in BeatSaberDir '$(BeatSaberDir)'; the game version could not be verified." />
+    <Warning Condition="!Exists('Resources\$(BSTarget)\ttvstreamerskit.bundle')"
+             Text="Resources\$(BSTarget)\ttvstreamerskit.bundle is missing. The chat will use a system font. Run build-bundle.ps1 in the repository root." />
+
+    <Message Importance="high" Text="TTVStreamersKit: BSTarget=$(BSTarget), BeatSaberDir=$(BeatSaberDir)" />
+  </Target>
+
+</Project>

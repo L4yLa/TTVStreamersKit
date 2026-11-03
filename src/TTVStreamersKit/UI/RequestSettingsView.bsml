@@ -1,0 +1,33 @@
+<scrollable-settings-container xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <!-- text の高さは既定で 50 のため、size-delta-y で指定する -->
+  <text text='{{Song requests|リクエストの設定}}' font-size='5' align='Center' size-delta-y='7' />
+  <slider-setting text='{{Min rating (%)|評価の下限 (%)}}' min='0' max='100' increment='0.5' value='lowest-rating' apply-on-change='true'
+                  hover-hint='{{Rejects songs rated lower on BeatSaver. Songs without a rating are not checked|BeatSaver の評価がこれより低い曲は受け付けません 評価のない曲は対象外です}}' />
+  <slider-setting text='{{Max length (min)|長さの上限 (分)}}' min='0' max='999' increment='1' integer-only='true' value='max-length' apply-on-change='true'
+                  hover-hint='{{Maximum song length|曲の長さの上限です}}' />
+  <slider-setting text='{{Min NJS|NJS の下限}}' min='0' max='50' increment='0.5' value='min-njs' apply-on-change='true' />
+  <slider-setting text='{{User limit|一般の上限}}' min='0' max='10' increment='1' integer-only='true' value='user-limit' apply-on-change='true'
+                  hover-hint='{{Requests per user|一般の視聴者のリクエストの上限です}}' />
+  <slider-setting text='{{Sub limit|サブスクの上限}}' min='0' max='10' increment='1' integer-only='true' value='sub-limit' apply-on-change='true' />
+  <slider-setting text='{{Mod limit|モデレーターの上限}}' min='0' max='100' increment='1' integer-only='true' value='mod-limit' apply-on-change='true'
+                  hover-hint='{{Requests per moderator|モデレーターのリクエストの上限です}}' />
+  <slider-setting text='{{VIP bonus|VIP の追加分}}' min='0' max='10' increment='1' integer-only='true' value='vip-bonus' apply-on-change='true' />
+  <bool-setting text='{{Full mod rights|モデレーターに全権限}}' value='mod-full-rights' apply-on-change='true'
+                hover-hint='{{Moderators can use every command|モデレーターがすべてのコマンドを使えます}}' />
+  <bool-setting text='{{Limit per session|セッション単位の上限}}' value='limit-to-session' apply-on-change='true'
+                hover-hint='{{Counts requests accepted in the session. When off, only requests still in the queue are counted|セッション中に受け付けた数で数えます オフならキューに残っている数で数えます}}' />
+  <slider-setting text='{{Session (hours)|セッション (時間)}}' min='1' max='12' increment='1' integer-only='true' value='session-hours' apply-on-change='true'
+                  hover-hint='{{Session length|セッションの区切りです}}' />
+  <bool-setting text='{{Notify sound|通知音}}' value='notify-sound' apply-on-change='true'
+                hover-hint='{{Plays request.wav in the UserData TTVStreamersKit folder|UserData の TTVStreamersKit フォルダーにある request.wav を鳴らします}}' />
+  <slider-setting text='{{Sound volume|通知音の音量}}' min='0' max='100' increment='10' integer-only='true' value='sound-volume' apply-on-change='true' />
+  <bool-setting text='{{Hold while playing|プレイ中は保留}}' value='performance-mode' apply-on-change='true'
+                hover-hint='{{Processes requests after the song ends|曲の最中に届いたリクエストは曲が終わってから処理します}}' />
+  <bool-setting text='{{Require difficulty|難易度の指定を必須}}' value='require-difficulty' apply-on-change='true' />
+  <dropdown-list-setting text='{{!link target|!link の対象}}' value='link-type' choices='link-types' apply-on-change='true'
+                         hover-hint='{{Requested song is the one played from the queue / Selected song is the one selected in the song list|リクエストのみ はキューから再生した曲 / 選んでいる曲 は選曲画面で選んでいる曲}}' />
+  <bool-setting text='{{Shared chat commands|統合先のコマンド}}' value='shared-chat-commands' apply-on-change='true'
+                hover-hint='{{Also accepts commands from viewers of other channels in a shared chat|共有チャットで他のチャンネルの視聴者が送ったコマンドも受け付けます}}' />
+  <bool-setting text='{{Prefix replies with !|返信の先頭に !}}' value='bot-prefix' apply-on-change='true'
+                hover-hint='{{Keeps text-to-speech tools from reading the replies|読み上げソフトに返信を読ませないためのものです}}' />
+</scrollable-settings-container>

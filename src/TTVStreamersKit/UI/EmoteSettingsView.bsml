@@ -1,0 +1,34 @@
+<scrollable-settings-container xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <!-- text の高さは既定で 50 のため、size-delta-y で指定する -->
+  <text text='{{Emote effects|エモートの演出}}' font-size='5' align='Center' size-delta-y='7' />
+  <bool-setting text='{{Show in menu|メニューで表示}}' value='enabled-in-menu' apply-on-change='true' />
+  <bool-setting text='{{Show while playing|プレイ中に表示}}' value='enabled-in-song' apply-on-change='true' />
+  <bool-setting text='{{On-Screen Celebration|全画面セレブレーション}}' value='celebration' apply-on-change='true'
+                hover-hint='{{Rains the emote of an On-Screen Celebration|全画面セレブレーションのエモートを降らせます}}' />
+  <dropdown-list-setting text='{{Style|表示方法}}' value='style' choices='style-options' formatter='style-formatter' apply-on-change='true' />
+  <slider-setting text='{{Quantity multiplier|表示数の倍率}}' value='count-coefficient' min='1' max='10' increment='1' integer-only='true' apply-on-change='true' />
+  <slider-setting text='{{Min size (m)|最小サイズ (m)}}' value='emote-size-min' min='0.05' max='5' increment='0.05' apply-on-change='true' />
+  <slider-setting text='{{Max size (m)|最大サイズ (m)}}' value='emote-size-max' min='0.05' max='5' increment='0.05' apply-on-change='true' />
+  <slider-setting text='{{Opacity|不透明度}}' value='alpha' min='0' max='1' increment='0.05' apply-on-change='true' />
+  <dropdown-list-setting text='{{Area|表示範囲}}' value='zone' choices='zone-options' formatter='zone-formatter' apply-on-change='true' />
+  <slider-setting text='{{Distance Z (m)|奥行き Z (m)}}' value='emote-z' min='-10' max='50' increment='0.5' apply-on-change='true' />
+  <bool-setting text='{{Show advanced settings|高度な設定を表示}}' value='show-advanced' on-change='on-advanced-changed' apply-on-change='true' />
+
+  <text tags='advanced' text='{{Limits|上限}}' font-size='4' align='Center' size-delta-y='6' />
+  <slider-setting tags='advanced' text='{{Max per message|1通の上限}}' value='max-emotes-per-message' min='1' max='100' increment='1' integer-only='true' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Max particles|同時表示の上限}}' value='max-concurrent-particles' min='50' max='2000' increment='10' integer-only='true' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Lifetime (s)|表示時間 (秒)}}' value='lifetime' min='0.5' max='30' increment='0.5' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Speed scale|速度の倍率}}' value='speed-scale' min='0.1' max='5' increment='0.1' apply-on-change='true' />
+  <text tags='advanced' text='{{Above the lane|レーンの上方}}' font-size='4' align='Center' size-delta-y='6' />
+  <slider-setting tags='advanced' text='{{Half width (m)|横幅の半分 (m)}}' value='above-lane-half-x' min='0' max='10' increment='0.1' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Bottom Y (m)|下端 Y (m)}}' value='above-lane-min-y' min='0' max='15' increment='0.1' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Top Y (m)|上端 Y (m)}}' value='above-lane-max-y' min='0' max='15' increment='0.1' apply-on-change='true' />
+  <text tags='advanced' text='{{Sides|左右}}' font-size='4' align='Center' size-delta-y='6' />
+  <slider-setting tags='advanced' text='{{Inner X (m)|内側 X (m)}}' value='side-inner-x' min='0' max='20' increment='0.1' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Outer X (m)|外側 X (m)}}' value='side-outer-x' min='0' max='20' increment='0.1' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Bottom Y (m)|下端 Y (m)}}' value='side-min-y' min='0' max='15' increment='0.1' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Top Y (m)|上端 Y (m)}}' value='side-max-y' min='0' max='15' increment='0.1' apply-on-change='true' />
+  <text tags='advanced' text='{{Menu|メニュー}}' font-size='4' align='Center' size-delta-y='6' />
+  <slider-setting tags='advanced' text='{{Distance Z (m)|奥行き Z (m)}}' value='menu-emote-z' min='-10' max='50' increment='0.5' apply-on-change='true' />
+  <slider-setting tags='advanced' text='{{Size scale|サイズの倍率}}' value='menu-emote-scale' min='0.05' max='3' increment='0.05' apply-on-change='true' />
+</scrollable-settings-container>
