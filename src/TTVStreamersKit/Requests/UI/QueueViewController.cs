@@ -3,9 +3,9 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
+using SongCore;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using TTVStreamersKit.Utilities;
 
@@ -61,27 +61,11 @@ namespace TTVStreamersKit.Requests.UI
             ? Localization.T("Close requests", "リクエストを閉じる")
             : Localization.T("Open requests", "リクエストを開ける");
 
-        [UIValue("detail-text")]
-        private string DetailText
-        {
-            get {
-                var r = _selected;
-                if (r?.Map == null) {
-                    return "";
-                }
-                var lines = new List<string> {
-                    $"{r.Map.SongName} {r.Map.SongSubName}".Trim() + $"  ({r.Map.Key})",
-                    $"{Localization.T("Requested by", "リクエスト")}: {r.Requester?.Name ?? "-"}  {Localization.T("Time", "時刻")}: {r.RequestedAt.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture)}  {Localization.T("Status", "状態")}: {StatusText(r.Status)}",
-                };
-                if (r.HasDifficulty) {
-                    lines.Add($"{Localization.T("Difficulty", "難易度")}: {r.DifficultyDisplayName}");
-                }
-                else if (Plugin.Config.Request.RequireDifficulty && !_showHistory) {
-                    lines.Add($"<color=#ff8080>{Localization.T("No difficulty specified", "難易度が指定されていません")}</color>");
-                }
-                return string.Join("\n", lines);
-            }
-        }
+        /// <summary>選んだ曲がまだ手元にない（ダウンロードが要る）ときは「ダウンロード」にする。</summary>
+        [UIValue("play-button-text")]
+        private string PlayButtonText => _selected?.Map != null && Loader.GetLevelByHash(_selected.Map.Hash) == null
+            ? Localization.T("Download", "ダウンロード")
+            : Localization.T("Play", "プレイ");
 
         [UIValue("can-play")]
         private bool CanPlay => _selected != null && !SongDownloader.IsBusy
@@ -106,19 +90,6 @@ namespace TTVStreamersKit.Requests.UI
         {
             get => _keyboardText;
             set => _keyboardText = value ?? "";
-        }
-
-        private static string StatusText(RequestStatus s)
-        {
-            switch (s) {
-                case RequestStatus.Queued: return Localization.T("Queued", "キュー");
-                case RequestStatus.Played: return Localization.T("Played", "再生済み");
-                case RequestStatus.Skipped: return Localization.T("Skipped", "スキップ");
-                case RequestStatus.Blocked: return Localization.T("Blocked", "ブロック");
-                case RequestStatus.WrongSong: return Localization.T("Withdrawn", "取り消し");
-                case RequestStatus.SearchResult: return Localization.T("Search result", "検索の結果");
-                default: return s.ToString();
-            }
         }
 
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
@@ -150,6 +121,7 @@ namespace TTVStreamersKit.Requests.UI
         {
             this.NotifyPropertyChanged(nameof(this.TitleText));
             this.NotifyPropertyChanged(nameof(this.CanPlay));
+            this.NotifyPropertyChanged(nameof(this.PlayButtonText));
         }
 
         private void OnCoverLoaded(string hash)
@@ -173,7 +145,11 @@ namespace TTVStreamersKit.Requests.UI
             _list.Data = _shown.Select(r => {
                 var dim = !_showHistory && requireDifficulty && !r.HasDifficulty;
                 var name = $"{r.Map.SongName} <size=80%>({r.Map.Key})</size>";
+                // 下段は「譜面作者 長さ 難易度 リクエストした人」。難易度は指定があるときだけ
                 var sub = $"{r.Map.LevelAuthorName}  {RequestManager.FormatDuration(r.Map.Duration)}";
+                if (r.HasDifficulty) {
+                    sub += $"  {r.DifficultyDisplayName}";
+                }
                 if (r.Status == RequestStatus.SearchResult) {
                     sub += $"  [{Localization.T("Search result", "検索の結果")}]";
                 }
@@ -202,7 +178,7 @@ namespace TTVStreamersKit.Requests.UI
             this.NotifyPropertyChanged(nameof(this.TitleText));
             this.NotifyPropertyChanged(nameof(this.HistoryButtonText));
             this.NotifyPropertyChanged(nameof(this.OpenButtonText));
-            this.NotifyPropertyChanged(nameof(this.DetailText));
+            this.NotifyPropertyChanged(nameof(this.PlayButtonText));
             this.NotifyPropertyChanged(nameof(this.CanPlay));
             this.NotifyPropertyChanged(nameof(this.CanSkip));
             this.NotifyPropertyChanged(nameof(this.CanBlock));
