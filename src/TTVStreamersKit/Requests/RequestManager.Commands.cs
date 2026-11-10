@@ -13,29 +13,48 @@ namespace TTVStreamersKit.Requests
         {
             const CommandPermission everyone = CommandPermission.Everyone;
             const CommandPermission mod = CommandPermission.Moderator;
-            this.AddCommand("bsr", new[] { "request", "add", "srm" }, everyone, ArgumentKind.Required, "!bsr <key | words>",
+            this.AddCommand("bsr", new[] { "request", "add", "srm" }, everyone, ArgumentKind.Required, "<key | words>",
                 c => this.BeginRequest(c, c.Argument, AddMode.Normal));
-            this.AddCommand("bsrd", new[] { "bsrdiff" }, everyone, ArgumentKind.Required, "!bsrd <key> <difficulty>", this.HandleBsrd);
-            this.AddCommand("difficulty", new[] { "diff", "d", "難易度" }, everyone, ArgumentKind.Required, "!difficulty <difficulty>", this.HandleDifficulty);
-            this.AddCommand("wrongsong", new[] { "wrong", "oops" }, everyone, ArgumentKind.None, "!wrongsong", this.HandleWrongSong);
-            this.AddCommand("queue", Array.Empty<string>(), everyone, ArgumentKind.None, "!queue", this.HandleQueue);
-            this.AddCommand("link", Array.Empty<string>(), everyone, ArgumentKind.None, "!link", this.HandleLink);
-            this.AddCommand("help", Array.Empty<string>(), everyone, ArgumentKind.Optional, "!help [command]", this.HandleHelp);
-            this.AddCommand("lookup", new[] { "find" }, CommandPermission.Subscriber | CommandPermission.Vip | mod, ArgumentKind.Required, "!lookup <key | words>",
+            this.AddCommand("bsrd", new[] { "bsrdiff" }, everyone, ArgumentKind.Required, "<key> <difficulty>", this.HandleBsrd);
+            this.AddCommand("difficulty", new[] { "diff", "d", "難易度" }, everyone, ArgumentKind.Required, "<difficulty>", this.HandleDifficulty);
+            this.AddCommand("wrongsong", new[] { "wrong", "oops" }, everyone, ArgumentKind.None, "", this.HandleWrongSong);
+            this.AddCommand("queue", Array.Empty<string>(), everyone, ArgumentKind.None, "", this.HandleQueue);
+            this.AddCommand("link", Array.Empty<string>(), everyone, ArgumentKind.None, "", this.HandleLink);
+            this.AddCommand("help", Array.Empty<string>(), everyone, ArgumentKind.Optional, "[command]", this.HandleHelp);
+            this.AddCommand("lookup", new[] { "find" }, CommandPermission.Subscriber | CommandPermission.Vip | mod, ArgumentKind.Required, "<key | words>",
                 c => this.EnqueueWork(() => this.HandleLookup(c)));
-            this.AddCommand("open", Array.Empty<string>(), mod, ArgumentKind.None, "!open", c => this.SetQueueOpen(true));
-            this.AddCommand("close", Array.Empty<string>(), mod, ArgumentKind.None, "!close", c => this.SetQueueOpen(false));
-            this.AddCommand("queuestatus", Array.Empty<string>(), mod, ArgumentKind.None, "!queuestatus", this.HandleQueueStatus);
-            this.AddCommand("modadd", Array.Empty<string>(), mod, ArgumentKind.Required, "!modadd <key | words>",
+            this.AddCommand("open", Array.Empty<string>(), mod, ArgumentKind.None, "", c => this.SetQueueOpen(true));
+            this.AddCommand("close", Array.Empty<string>(), mod, ArgumentKind.None, "", c => this.SetQueueOpen(false));
+            this.AddCommand("queuestatus", Array.Empty<string>(), mod, ArgumentKind.None, "", this.HandleQueueStatus);
+            this.AddCommand("modadd", Array.Empty<string>(), mod, ArgumentKind.Required, "<key | words>",
                 c => this.BeginRequest(c, c.Argument, AddMode.ModAdd));
-            this.AddCommand("att", Array.Empty<string>(), mod, ArgumentKind.Required, "!att <key | words>",
+            this.AddCommand("att", Array.Empty<string>(), mod, ArgumentKind.Required, "<key | words>",
                 c => this.BeginRequest(c, c.Argument, AddMode.AddToTop));
-            this.AddCommand("remove", Array.Empty<string>(), mod, ArgumentKind.Required, "!remove <key | words>", this.HandleRemove);
-            this.AddCommand("clearqueue", Array.Empty<string>(), mod, ArgumentKind.None, "!clearqueue", this.HandleClearQueue);
-            this.AddCommand("block", Array.Empty<string>(), mod, ArgumentKind.Alphanumeric, "!block <key>",
+            this.AddCommand("remove", Array.Empty<string>(), mod, ArgumentKind.Required, "<key | words>", this.HandleRemove);
+            this.AddCommand("clearqueue", Array.Empty<string>(), mod, ArgumentKind.None, "", this.HandleClearQueue);
+            this.AddCommand("block", Array.Empty<string>(), mod, ArgumentKind.Alphanumeric, "<key>",
                 c => this.EnqueueWork(() => this.HandleBlock(c)));
-            this.AddCommand("unblock", Array.Empty<string>(), mod, ArgumentKind.Alphanumeric, "!unblock <key>", this.HandleUnblock);
-            this.AddCommand("about", Array.Empty<string>(), CommandPermission.Broadcaster, ArgumentKind.None, "!about", this.HandleAbout);
+            this.AddCommand("unblock", Array.Empty<string>(), mod, ArgumentKind.Alphanumeric, "<key>", this.HandleUnblock);
+            this.AddCommand("about", Array.Empty<string>(), CommandPermission.Broadcaster, ArgumentKind.None, "", this.HandleAbout);
+        }
+
+        /// <summary>
+        /// 使い方の返信の変数。%command% は ! を付けない名前、%usage% は入力の形（! 付き）。
+        /// 返信が ! で始まると、ほかのボットやこの MOD 自身がコマンドとして受け取ることがあるため、
+        /// コマンドを指すときは「名前 コマンド」と書き、! 付きの入力の形は「使い方:」などの後に置く。
+        /// </summary>
+        internal static Dictionary<string, string> UsageVars(CommandDefinition cmd) => new Dictionary<string, string> {
+            ["command"] = cmd?.Name ?? "",
+            ["usage"] = UsageText(cmd),
+        };
+
+        /// <summary>入力の形。<see cref="CommandDefinition.Usage"/> は引数の部分だけを持つ。</summary>
+        private static string UsageText(CommandDefinition cmd)
+        {
+            if (cmd == null) {
+                return "";
+            }
+            return string.IsNullOrEmpty(cmd.Usage) ? "!" + cmd.Name : "!" + cmd.Name + " " + cmd.Usage;
         }
 
         private void AddCommand(string name, string[] aliases, CommandPermission permission, ArgumentKind arg, string usage, Action<CommandContext> handler)
@@ -50,7 +69,7 @@ namespace TTVStreamersKit.Requests
             var parts = ctx.Argument.Split((char[])null, 2, StringSplitOptions.RemoveEmptyEntries);
             var cmd = _commands.Find("bsrd");
             if (parts.Length < 2) {
-                this.Reply("Usage", new Dictionary<string, string> { ["usage"] = cmd?.Usage ?? "" });
+                this.Reply("Usage", UsageVars(cmd));
                 return;
             }
             this.SetPendingDifficulty(ctx.User.Id, parts[1].Trim());
@@ -115,7 +134,7 @@ namespace TTVStreamersKit.Requests
                 }
                 return;
             }
-            var names = _commands.All.Where(c => c.Enabled && c.IsAllowed(ctx, _config.ModFullRights)).Select(c => "!" + c.Name);
+            var names = _commands.All.Where(c => c.Enabled && c.IsAllowed(ctx, _config.ModFullRights)).Select(c => c.Name);
             this.Reply("HelpList", new Dictionary<string, string> { ["list"] = string.Join(" ", names) });
         }
 
@@ -123,9 +142,9 @@ namespace TTVStreamersKit.Requests
         {
             var key = "Help." + cmd.Name;
             this.Reply("HelpCommand", new Dictionary<string, string> {
-                ["command"] = "!" + cmd.Name,
+                ["command"] = cmd.Name,
                 ["description"] = _messages.Has(key) ? _messages.Get(key) : "",
-                ["usage"] = cmd.Usage,
+                ["usage"] = UsageText(cmd),
             });
         }
 

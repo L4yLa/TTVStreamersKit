@@ -163,7 +163,7 @@ namespace TTVStreamersKit.Requests
                 return;
             }
             if (!cmd.IsAllowed(ctx, _config.ModFullRights)) {
-                this.Reply("PermissionDenied", new Dictionary<string, string> { ["command"] = "!" + cmd.Name, ["roles"] = this.DescribeRoles(cmd.Permission) });
+                this.Reply("PermissionDenied", new Dictionary<string, string> { ["command"] = cmd.Name, ["roles"] = this.DescribeRoles(cmd.Permission) });
                 return;
             }
             if (arg == "?") {
@@ -172,7 +172,7 @@ namespace TTVStreamersKit.Requests
             }
             if ((cmd.Argument == ArgumentKind.Required && arg.Length == 0)
                 || (cmd.Argument == ArgumentKind.Alphanumeric && !Regex.IsMatch(arg, "^[0-9A-Za-z]+$"))) {
-                this.Reply("Usage", new Dictionary<string, string> { ["usage"] = cmd.Usage });
+                this.Reply("Usage", UsageVars(cmd));
                 return;
             }
             ctx.Argument = arg;

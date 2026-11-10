@@ -30,7 +30,8 @@ namespace TTVStreamersKit.Requests
                     var custom = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(path, Encoding.UTF8));
                     if (custom != null) {
                         foreach (var kv in custom) {
-                            if (kv.Value != null && defaults.ContainsKey(kv.Key)) {
+                            // 以前の版の既定の文言のままなら、今の既定に置き換える（書き戻したファイルに古い既定が残るため）
+                            if (kv.Value != null && defaults.ContainsKey(kv.Key) && !IsOldDefault(kv.Key, kv.Value)) {
                                 texts[kv.Key] = kv.Value;
                             }
                         }
@@ -44,6 +45,40 @@ namespace TTVStreamersKit.Requests
             }
             return new Messages(texts);
         }
+
+        /// <summary>
+        /// 以前の版の既定の文言。返信が「!名前」で始まっていたもの（ほかのボットやこの MOD 自身がコマンドとして受け取ることがある）と、
+        /// 開発中の版で使い方からも ! を外していたもの。
+        /// </summary>
+        private static readonly Dictionary<string, string[]> s_oldDefaults = new Dictionary<string, string[]>(StringComparer.Ordinal) {
+            ["DifficultyPrompt"] = new[] {
+                "%user%, please choose a difficulty for %songName% (%key%) with !difficulty: %available%",
+                "%user% さん、%songName% (%key%) の難易度を !difficulty で指定してください: %available%",
+                "%user%, please choose a difficulty for %songName% (%key%) with the difficulty command: %available%",
+                "%user% さん、%songName% (%key%) の難易度を difficulty コマンドで指定してください: %available%",
+            },
+            ["HelpList"] = new[] {
+                "Commands: %list%. Add a command name to the help command for details.",
+                "コマンド: %list% 詳しくは help コマンドにコマンド名を付けてください",
+            },
+            ["HelpCommand"] = new[] {
+                "%command%: %description% Usage: %usage%",
+                "%command%: %description% 使い方: %usage%",
+                "%command% command: %description% Usage: %command% command%usage%",
+                "%command% コマンド: %description% 使い方: %command% コマンド%usage%",
+            },
+            ["Usage"] = new[] {
+                "Usage: %command% command%usage%",
+                "使い方: %command% コマンド%usage%",
+            },
+            ["PermissionDenied"] = new[] {
+                "%command% can be used by: %roles%.",
+                "%command% を使えるのは %roles% です",
+            },
+        };
+
+        private static bool IsOldDefault(string key, string value) =>
+            s_oldDefaults.TryGetValue(key, out var olds) && Array.IndexOf(olds, value) >= 0;
 
         public string Get(string key) => _texts.TryGetValue(key, out var s) ? s : key;
 
@@ -103,7 +138,7 @@ namespace TTVStreamersKit.Requests
             ["FilterRating"] = "%songName% (%key%) is below the minimum rating (%rating%, limit %limit%).",
             ["Added"] = "Request %songName% %songSubName% / %levelAuthorName% %rating% (%key%) added to queue.",
             ["AddedDifficulty"] = " Difficulty: %difficulty%",
-            ["DifficultyPrompt"] = "%user%, please choose a difficulty for %songName% (%key%) with !difficulty: %available%",
+            ["DifficultyPrompt"] = "%user%, please choose a difficulty for %songName% (%key%) with !difficulty (!d): %available%",
             ["DifficultySet"] = "%user%, the difficulty of %songName% (%key%) is set to %difficulty%.",
             ["DifficultyUnknown"] = "%user%, \"%input%\" is not available for %songName% (%key%). Available: %available%",
             ["DifficultyPending"] = "%user%, \"%input%\" will be used for your next request (within 30 seconds).",
@@ -121,9 +156,9 @@ namespace TTVStreamersKit.Requests
             ["StateOpen"] = "open",
             ["StateClosed"] = "closed",
             ["HelpList"] = "Commands: %list%. Use !help <command> for details.",
-            ["HelpCommand"] = "%command%: %description% Usage: %usage%",
+            ["HelpCommand"] = "%command% command: %description% Usage: %usage%",
             ["Usage"] = "Usage: %usage%",
-            ["PermissionDenied"] = "%command% can be used by: %roles%.",
+            ["PermissionDenied"] = "The %command% command can be used by: %roles%.",
             ["About"] = "TTVStreamersKit %version%. Designed after EnhancedStreamChat and SongRequestManagerV2 by denpadokei and angturil.",
             ["QueueOpened"] = "Song requests are now open.",
             ["QueueClosed"] = "Song requests are now closed.",
@@ -184,7 +219,7 @@ namespace TTVStreamersKit.Requests
             ["FilterRating"] = "%songName% (%key%) の評価が下限に届きません（%rating%、下限 %limit%）",
             ["Added"] = "%songName% %songSubName% / %levelAuthorName% %rating% (%key%) をキューに追加しました",
             ["AddedDifficulty"] = "（難易度: %difficulty%）",
-            ["DifficultyPrompt"] = "%user% さん、%songName% (%key%) の難易度を !difficulty で指定してください: %available%",
+            ["DifficultyPrompt"] = "%user% さん、%songName% (%key%) の難易度を !difficulty (!d) で指定してください: %available%",
             ["DifficultySet"] = "%user% さん、%songName% (%key%) の難易度を %difficulty% にしました",
             ["DifficultyUnknown"] = "%user% さん、%songName% (%key%) に「%input%」はありません。指定できるもの: %available%",
             ["DifficultyPending"] = "%user% さん、次のリクエスト（30 秒以内）に「%input%」を使います",
@@ -202,9 +237,9 @@ namespace TTVStreamersKit.Requests
             ["StateOpen"] = "受付中",
             ["StateClosed"] = "停止中",
             ["HelpList"] = "コマンド: %list% 詳しくは !help <コマンド名>",
-            ["HelpCommand"] = "%command%: %description% 使い方: %usage%",
+            ["HelpCommand"] = "%command% コマンド: %description% 使い方: %usage%",
             ["Usage"] = "使い方: %usage%",
-            ["PermissionDenied"] = "%command% を使えるのは %roles% です",
+            ["PermissionDenied"] = "%command% コマンドを使えるのは %roles% です",
             ["About"] = "TTVStreamersKit %version% 設計の元になった MOD: EnhancedStreamChat、SongRequestManagerV2（denpadokei 氏、angturil 氏）",
             ["QueueOpened"] = "リクエストの受付を始めました",
             ["QueueClosed"] = "リクエストの受付を停止しました",
