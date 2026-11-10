@@ -12,6 +12,6 @@
     "SiraUtil": "^3.1.12",
     "CameraUtils": "^1.0.7",
     "SongCore": "^3.15.3",
-    "TTVCore": "^0.1.0"
+    "TTVCore": ">=0.1.0"
   }
 }
