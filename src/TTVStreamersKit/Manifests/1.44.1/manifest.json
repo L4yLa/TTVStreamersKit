@@ -3,7 +3,7 @@
   "id": "TTVStreamersKit",
   "name": "TTVStreamersKit",
   "author": "L4yLa",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Chat display, song requests and emote effects for streamers. Uses TTVCore for Twitch.",
   "gameVersion": "1.44.1",
   "dependsOn": {
