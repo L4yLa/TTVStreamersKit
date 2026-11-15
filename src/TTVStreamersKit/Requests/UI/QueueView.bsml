@@ -1,10 +1,15 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <horizontal spacing='3' pad-top='2' horizontal-fit='PreferredSize' vertical-fit='PreferredSize' child-expand-width='false' child-control-width='true'>
     <!-- child-control-height を true にしないと、一覧（LayoutElement で大きさを決める）の高さが 0 になる -->
-    <!-- スクロールバーは一覧の右端の外に幅 8 で付くため、列の幅は一覧の幅 + 8 にする -->
-    <vertical pref-width='92' spacing='1' child-control-height='true' child-expand-height='false' vertical-fit='PreferredSize'>
-      <text text='~title-text' font-size='5' align='Center' pref-height='6' />
-      <list id='list' select-cell='select-cell' visible-cells='6' cell-size='9' list-width='84' show-scrollbar='true' />
+    <!-- スクロールバーは一覧の右端の外に付き、右端は一覧の右端から約 4 外になる（実機の見た目から測った値）。 -->
+    <!-- 列の幅は一覧の幅 + 4 にし、スクロールバーからボタンまでの隙間を、一覧からスクロールバーまでの隙間（約 3）にそろえる -->
+    <!-- vertical は子の幅を列の幅まで広げるのが既定のため、child-expand-width='false' で一覧を list-width のままにする -->
+    <vertical pref-width='92' spacing='1' child-control-height='true' child-expand-height='false' child-expand-width='false' vertical-fit='PreferredSize'>
+      <!-- text は LayoutElement を持たず pref-width が効かないため、列と同じ幅の horizontal で包んで中央に置く -->
+      <horizontal pref-width='92' pref-height='6' child-align='MiddleCenter'>
+        <text text='~title-text' font-size='5' align='Center' />
+      </horizontal>
+      <list id='list' select-cell='select-cell' visible-cells='6' cell-size='9' list-width='88' show-scrollbar='true' />
     </vertical>
     <vertical pref-width='38' spacing='1' child-control-height='true' child-expand-height='false' vertical-fit='PreferredSize'>
       <button text='~play-button-text' on-click='play' interactable='~can-play' pref-width='38' pref-height='8' />

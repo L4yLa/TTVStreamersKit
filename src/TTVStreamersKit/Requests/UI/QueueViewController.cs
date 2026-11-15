@@ -49,12 +49,12 @@ namespace TTVStreamersKit.Requests.UI
             ? $"<color=#ffd966>{_player.Status}</color>"
             : _showHistory
             ? Localization.T("History", "履歴")
-            : Localization.T($"Queue ({this.QueuedCount})", $"キュー ({this.QueuedCount} 曲)");
+            : Localization.T($"Queue ({this.QueuedCount})", $"リクエストキュー ({this.QueuedCount} 曲)");
 
         private int QueuedCount => _manager?.Queue.Count(r => r.Status == RequestStatus.Queued) ?? 0;
 
         [UIValue("history-button-text")]
-        private string HistoryButtonText => _showHistory ? Localization.T("Queue", "キュー") : Localization.T("History", "履歴");
+        private string HistoryButtonText => _showHistory ? Localization.T("Queue", "リクエストキュー") : Localization.T("History", "履歴");
 
         [UIValue("open-button-text")]
         private string OpenButtonText => _manager != null && _manager.IsOpen
