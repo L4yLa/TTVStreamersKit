@@ -107,6 +107,20 @@ namespace TTVStreamersKit.Requests
                 this.DiscardPendingDifficulty(ctx.User.Id);
                 return;
             }
+            // 指定された難易度（!bsrd、または先に送った !difficulty）が手元の MOD で遊べなければ受け付けない
+            if (_config.RejectMissingMods && mode != AddMode.ModAdd && mode != AddMode.AddToTop
+                && this.PeekPendingDifficulty(ctx.User.Id, out var pending)
+                && DifficultyResolver.TryResolve(map, pending, out var wanted)) {
+                var missing = ModRequirements.Missing(map, wanted);
+                if (missing.Count > 0) {
+                    var vars = this.SongVars(map, ctx.User);
+                    vars["difficulty"] = wanted.FullDisplayName;
+                    vars["mods"] = string.Join(", ", missing);
+                    this.Reply("FilterMissingModsDifficulty", vars);
+                    this.DiscardPendingDifficulty(ctx.User.Id);
+                    return;
+                }
+            }
             this.AddToQueue(map, ctx.User, mode == AddMode.AddToTop);
         }
 
@@ -179,6 +193,10 @@ namespace TTVStreamersKit.Requests
             if (_store.WasRequestedThisSession(map.Key)) {
                 return "FilterDuplicate";
             }
+            // 手元の MOD で遊べる難易度が1つもなければ受け付けない（許可一覧の曲も遊べないため、許可一覧より先に判定する）
+            if (_config.RejectMissingMods && !ModRequirements.HasPlayableDifficulty(map)) {
+                return "FilterMissingMods";
+            }
             if (_lists.SongAllowList.Contains(map.Key)) {
                 return null;
             }
@@ -207,6 +225,10 @@ namespace TTVStreamersKit.Requests
                     break;
                 case "FilterRating":
                     vars["limit"] = _config.LowestAllowedRating.ToString("0.#", CultureInfo.InvariantCulture) + "%";
+                    break;
+                case "FilterMissingMods":
+                    vars["mods"] = string.Join(", ", ModRequirements.MissingForAll(map));
+                    vars["limit"] = "";
                     break;
                 default:
                     vars["limit"] = "";
@@ -315,6 +337,17 @@ namespace TTVStreamersKit.Requests
             }
         }
 
+        /// <summary>保留している難易度を、取り出さずに見る。</summary>
+        private bool PeekPendingDifficulty(string userId, out string input)
+        {
+            input = null;
+            if (userId == null || !_pendingDifficulty.TryGetValue(userId, out var p) || p.Expires < DateTime.UtcNow) {
+                return false;
+            }
+            input = p.Input;
+            return true;
+        }
+
         private bool TakePendingDifficulty(string userId, out string input)
         {
             input = null;
@@ -350,6 +383,15 @@ namespace TTVStreamersKit.Requests
                 vars["input"] = input;
                 vars["available"] = DifficultyResolver.DescribeAvailable(request.Map);
                 this.Reply("DifficultyUnknown", vars);
+                return;
+            }
+            // 手元の MOD で遊べない難易度は指定させない
+            var missing = _config.RejectMissingMods ? ModRequirements.Missing(request.Map, resolved) : new List<string>();
+            if (missing.Count > 0) {
+                var vars = this.SongVars(request.Map, ctx.User, request);
+                vars["difficulty"] = resolved.FullDisplayName;
+                vars["mods"] = string.Join(", ", missing);
+                this.Reply("DifficultyMissingMods", vars);
                 return;
             }
             request.SetDifficulty(resolved);

@@ -15,6 +15,12 @@ namespace TTVStreamersKit.Requests
         [JsonProperty("label")] public string Label { get; set; } = "";
         [JsonProperty("njs")] public float Njs { get; set; }
         [JsonProperty("stars")] public float? Stars { get; set; }
+
+        /// <summary>
+        /// 遊ぶのに必須の MOD（SongCore に登録される名前）。BeatSaver の ne / me / vivify から作る。
+        /// chroma と cinema は推奨の場合も true になり、必須かどうかを区別できないため含めない。
+        /// </summary>
+        [JsonProperty("requiredMods")] public List<string> RequiredMods { get; set; } = new List<string>();
     }
 
     /// <summary>BeatSaver の譜面の情報のうち、リクエストで使うもの。キューのファイルにもこの形で保存する。</summary>
@@ -89,10 +95,26 @@ namespace TTVStreamersKit.Requests
                         Label = (string)d["label"] ?? "",
                         Njs = (float?)d["njs"] ?? 0f,
                         Stars = (float?)d["stars"],
+                        RequiredMods = RequiredModsOf(d),
                     });
                 }
             }
             return info;
+        }
+
+        private static List<string> RequiredModsOf(JObject diff)
+        {
+            var mods = new List<string>();
+            if ((bool?)diff["ne"] == true) {
+                mods.Add("Noodle Extensions");
+            }
+            if ((bool?)diff["me"] == true) {
+                mods.Add("Mapping Extensions");
+            }
+            if ((bool?)diff["vivify"] == true) {
+                mods.Add("Vivify");
+            }
+            return mods;
         }
     }
 }

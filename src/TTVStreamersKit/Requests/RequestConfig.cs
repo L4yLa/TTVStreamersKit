@@ -28,6 +28,8 @@ namespace TTVStreamersKit.Requests
         public virtual int SoundVolume { get; set; } = 50;
         public virtual bool PerformanceMode { get; set; } = false;
         public virtual bool RequireDifficulty { get; set; } = false;
+        /// <summary>手元の MOD で遊べない譜面（必須の MOD が足りない）を受け付けないか。</summary>
+        public virtual bool RejectMissingMods { get; set; } = true;
         [UseConverter(typeof(EnumConverter<LinkType>))]
         public virtual LinkType LinkType { get; set; } = LinkType.All;
 

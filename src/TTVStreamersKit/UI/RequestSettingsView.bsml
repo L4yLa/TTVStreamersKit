@@ -24,6 +24,8 @@
   <bool-setting text='{{Hold while playing|プレイ中は保留}}' value='performance-mode' apply-on-change='true'
                 hover-hint='{{Processes requests after the song ends|曲の最中に届いたリクエストは曲が終わってから処理します}}' />
   <bool-setting text='{{Require difficulty|難易度の指定を必須}}' value='require-difficulty' apply-on-change='true' />
+  <bool-setting text='{{Reject missing mods|必須 MOD 不足を拒否}}' value='reject-missing-mods' apply-on-change='true'
+                hover-hint='{{Rejects maps that need Noodle Extensions, Mapping Extensions or Vivify when it is not installed|Noodle Extensions、Mapping Extensions、Vivify が必要で、手元にない譜面を受け付けません}}' />
   <dropdown-list-setting text='{{!link target|!link の対象}}' value='link-type' choices='link-types' apply-on-change='true'
                          hover-hint='{{Requested song is the one played from the queue / Selected song is the one selected in the song list|リクエストのみ はキューから再生した曲 / 選んでいる曲 は選曲画面で選んでいる曲}}' />
   <bool-setting text='{{Shared chat commands|統合先のコマンド}}' value='shared-chat-commands' apply-on-change='true'

@@ -20,7 +20,7 @@ $assembly = "TTVStreamersKit"
 $log      = Join-Path $PSScriptRoot "build.log"
 $release  = Join-Path $PSScriptRoot "release"
 
-# 配布用のアーカイブ（release\<id>_v<version>_bs<gameVersion>.7z と .zip）は Release のときだけ作る。
+# 配布用のアーカイブ（release\<id>_v<version>_bs<gameVersion>.7z）は Release のときだけ作る。
 $doPackage = ($Configuration -eq "Release")
 
 Write-Host "============================================================"
@@ -53,7 +53,7 @@ else {
     Write-Host "[INFO] MSBuild not found. Falling back to 'dotnet build'."
 }
 
-# 7-Zip は PATH と Program Files の下から探す。zip も 7-Zip で作る。
+# 7-Zip は PATH と Program Files の下から探す。
 $sevenZip = $null
 if ($doPackage) {
     $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
@@ -76,7 +76,7 @@ if ($doPackage) {
     }
 }
 
-# release\<id>_v<version>_bs<gameVersion>.7z と .zip を作る。中身は Plugins\<assembly>.dll。
+# release\<id>_v<version>_bs<gameVersion>.7z を作る。中身は Plugins\<assembly>.dll。
 # 戻り値は @{ Ok; Archives; Message; Log }。
 function New-ReleasePackage([string]$Target) {
     $result = @{ Ok = $false; Archives = @(); Message = $null; Log = @() }
@@ -120,7 +120,7 @@ function New-ReleasePackage([string]$Target) {
     New-Item -ItemType Directory -Path $release -Force | Out-Null
     $baseName = "{0}_v{1}_bs{2}" -f $manifest.id, $manifest.version, $manifest.gameVersion
 
-    foreach ($format in @(@{ Ext = "7z"; Args = @("-t7z", "-mx=9") }, @{ Ext = "zip"; Args = @("-tzip", "-mx=9") })) {
+    foreach ($format in @(@{ Ext = "7z"; Args = @("-t7z", "-mx=9") })) {
         $archive = Join-Path $release ("{0}.{1}" -f $baseName, $format.Ext)
 
         # 7z a は既存のアーカイブに追加するため、先に消す

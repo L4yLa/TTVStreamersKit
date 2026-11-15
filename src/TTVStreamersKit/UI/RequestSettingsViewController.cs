@@ -61,6 +61,9 @@ namespace TTVStreamersKit.UI
         [UIValue("require-difficulty")]
         private bool RequireDifficulty { get => C.RequireDifficulty; set => C.RequireDifficulty = value; }
 
+        [UIValue("reject-missing-mods")]
+        private bool RejectMissingMods { get => C.RejectMissingMods; set => C.RejectMissingMods = value; }
+
         [UIValue("link-types")]
         private List<object> LinkTypes => new List<object> { _linkRequestOnly, _linkAll };
 
