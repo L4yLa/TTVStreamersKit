@@ -27,7 +27,7 @@
   <bool-setting text='{{Reject missing mods|必須 MOD 不足を拒否}}' value='reject-missing-mods' apply-on-change='true'
                 hover-hint='{{Rejects maps that need Noodle Extensions, Mapping Extensions or Vivify when it is not installed|Noodle Extensions、Mapping Extensions、Vivify が必要で、手元にない譜面を受け付けません}}' />
   <dropdown-list-setting text='{{!link target|!link の対象}}' value='link-type' choices='link-types' apply-on-change='true'
-                         hover-hint='{{Requested song is the one played from the queue / Selected song is the one selected in the song list|リクエストのみ はキューから再生した曲 / 選んでいる曲 は選曲画面で選んでいる曲}}' />
+                         hover-hint='{{Requested song is the last one played from the queue / Played song is the last custom song played (except WIP and songs not on BeatSaver)|リクエストのみ はキューから最後に再生した曲 / プレイした曲 は最後にプレイしたカスタム曲 (WIP と BeatSaver にない曲を除く)}}' />
   <bool-setting text='{{Shared chat commands|統合先のコマンド}}' value='shared-chat-commands' apply-on-change='true'
                 hover-hint='{{Also accepts commands from viewers of other channels in a shared chat|共有チャットで他のチャンネルの視聴者が送ったコマンドも受け付けます}}' />
   <bool-setting text='{{Prefix replies with !|返信の先頭に !}}' value='bot-prefix' apply-on-change='true'

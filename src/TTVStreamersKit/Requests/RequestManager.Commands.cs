@@ -112,18 +112,20 @@ namespace TTVStreamersKit.Requests
 
         private void HandleLink(CommandContext ctx)
         {
-            var song = _config.LinkType == LinkType.All && this.SelectedMap != null
-                ? new SongRequest { Map = this.SelectedMap }
-                : this.CurrentSong;
+            if (_config.LinkType == LinkType.All) {
+                // 最後にプレイした譜面。まだなければ何も返さない
+                if (this.LastPlayedMap != null) {
+                    this.Reply("Link", this.SongVars(this.LastPlayedMap));
+                }
+                return;
+            }
+            var song = this.CurrentSong;
             if (song?.Map == null) {
                 this.Reply("LinkNone");
                 return;
             }
             this.Reply("Link", this.SongVars(song.Map, null, song));
         }
-
-        /// <summary>選曲画面で選んでいる曲（!link の All で使う）。BeatSaver の曲でなければ null。</summary>
-        public MapInfo SelectedMap { get; set; }
 
         private void HandleHelp(CommandContext ctx)
         {

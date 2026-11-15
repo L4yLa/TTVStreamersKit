@@ -173,6 +173,10 @@
       <HintPath>$(BeatSaberDir)\Plugins\SongCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BeatSaberDir)\Libs\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="TTVCore">
       <HintPath>$(BeatSaberDir)\Plugins\TTVCore.dll</HintPath>
       <Private>False</Private>

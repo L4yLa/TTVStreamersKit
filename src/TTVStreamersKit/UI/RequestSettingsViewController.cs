@@ -11,7 +11,7 @@ namespace TTVStreamersKit.UI
     {
         // 画面は言語を変えると作り直すため、作ったときの言語で決める
         private readonly string _linkRequestOnly = Localization.T("Requested song", "リクエストのみ");
-        private readonly string _linkAll = Localization.T("Selected song", "選んでいる曲");
+        private readonly string _linkAll = Localization.T("Played song", "プレイした曲");
 
         public override string ResourceName => "TTVStreamersKit.UI.RequestSettingsView.bsml";
 

@@ -78,6 +78,7 @@ namespace TTVStreamersKit.Requests
             SceneManager.activeSceneChanged += this.OnActiveSceneChanged;
             Application.quitting += this.OnQuitting;
             Localization.Changed += this.ReloadMessages;
+            LevelStartPatch.LevelStarting += this.OnLevelStarting;
             _initialized = true;
             this.RaiseQueueChanged();
         }
@@ -98,6 +99,7 @@ namespace TTVStreamersKit.Requests
             SceneManager.activeSceneChanged -= this.OnActiveSceneChanged;
             Application.quitting -= this.OnQuitting;
             Localization.Changed -= this.ReloadMessages;
+            LevelStartPatch.LevelStarting -= this.OnLevelStarting;
             _store.SaveAll();
         }
 

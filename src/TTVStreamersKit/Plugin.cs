@@ -4,6 +4,7 @@ using IPA.Config.Stores;
 using SiraUtil.Zenject;
 using TTVStreamersKit.Configuration;
 using TTVStreamersKit.Installers;
+using TTVStreamersKit.Requests;
 using TTVStreamersKit.Utilities;
 using IPALogger = IPA.Logging.Logger;
 
@@ -23,6 +24,8 @@ namespace TTVStreamersKit
             Version = typeof(Plugin).Assembly.GetName().Version.ToString(3);
             Config = config.Generated<PluginConfig>();
             Localization.Apply(Config.Language);
+            // 曲の開始を捕まえる（!link の「プレイした曲」）
+            LevelStartPatch.Apply();
             zenjector.Install(Location.App, container => container.BindInstance(Config).AsSingle());
             zenjector.Install<AppInstaller>(Location.App);
             zenjector.Install<MenuInstaller>(Location.Menu);

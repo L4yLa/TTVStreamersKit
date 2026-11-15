@@ -55,6 +55,29 @@ namespace TTVStreamersKit.Requests
             }
         }
 
+        /// <summary>ハッシュで譜面を取得する。</summary>
+        public static async Task<(BeatSaverStatus Status, MapInfo Map)> GetByHashAsync(string hash, CancellationToken token = default(CancellationToken))
+        {
+            try {
+                using (var response = await s_http.GetAsync($"{ApiBase}/maps/hash/{Uri.EscapeDataString(hash)}", token).ConfigureAwait(false)) {
+                    if (response.StatusCode == HttpStatusCode.NotFound) {
+                        return (BeatSaverStatus.NotFound, null);
+                    }
+                    if (!response.IsSuccessStatusCode) {
+                        Plugin.Log.Warn($"BeatSaver: {(int)response.StatusCode} for hash {hash}");
+                        return (BeatSaverStatus.Unavailable, null);
+                    }
+                    var json = JObject.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+                    var map = MapInfo.FromJson(json);
+                    return map == null ? (BeatSaverStatus.NotFound, (MapInfo)null) : (BeatSaverStatus.Ok, map);
+                }
+            }
+            catch (Exception e) when (!(e is OperationCanceledException) || !token.IsCancellationRequested) {
+                Plugin.Log.Warn($"BeatSaver: {e.Message}");
+                return (BeatSaverStatus.Unavailable, null);
+            }
+        }
+
         /// <summary>文字列で検索する（最初のページ）。<paramref name="sortOrder"/> は Latest / Relevance など。</summary>
         public static async Task<(BeatSaverStatus Status, List<MapInfo> Maps)> SearchAsync(string query, string sortOrder, CancellationToken token = default(CancellationToken))
         {
