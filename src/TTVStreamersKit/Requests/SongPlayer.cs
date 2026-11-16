@@ -49,8 +49,8 @@ namespace TTVStreamersKit.Requests
 
         /// <summary>
         /// <paramref name="fromHistory"/> なら履歴から選んだ曲で、キューは触らない。
-        /// キューの曲は、選曲画面で選べると分かってから再生済みにする。ダウンロードや読み込みに失敗したときはキューに残し、
-        /// 失敗したことを <see cref="Status"/> に出したままにする（次に再生するまで）。
+        /// キューの曲は、選曲画面で選べると分かってから再生済みにする。ダウンロードや読み込みに失敗したときと、
+        /// 選曲画面で選べないとき（マルチプレイのロビーなど）はキューに残し、そのことを <see cref="Status"/> に出したままにする（次に再生するまで）。
         /// </summary>
         public async void Play(SongRequest request, bool fromHistory)
         {
@@ -89,6 +89,12 @@ namespace TTVStreamersKit.Requests
                         failure = Localization.T("The song could not be loaded", "曲を読み込めませんでした");
                         return;
                     }
+                }
+
+                // 選曲画面が開いていない（マルチプレイのロビーなど）ときは、キューに残して止める
+                if (!LevelNavigator.CanShow()) {
+                    failure = Localization.T("Open the song list to play", "曲の一覧を開いてから再生してください");
+                    return;
                 }
 
                 if (fromHistory) {

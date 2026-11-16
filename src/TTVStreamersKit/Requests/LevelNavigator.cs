@@ -12,11 +12,14 @@ using UnityEngine;
 namespace TTVStreamersKit.Requests
 {
     /// <summary>
-    /// 選曲画面（ソロのフリープレイ）のカスタム曲の一覧で、その曲を選ぶ。
+    /// 今開いている選曲画面（ソロ、パーティー、マルチプレイ）のカスタム曲の一覧で、その曲を選ぶ。
     /// 開く前に BetterSongList のフィルターがかかっていれば解除する。
     /// <para>キューの画面は選曲画面の上に開くため、キューの画面を閉じたあと、開いている選曲画面をそのまま操作する
     /// （開き直して、開くときの状態として曲を渡す方法では、曲が選ばれない）。
-    /// 選曲画面が開いていなければ、開くときの状態として曲を渡す。</para>
+    /// 曲の一覧の画面はどのモードでも共通のため、同じ手順でどの選曲画面でも選べる。
+    /// 曲の一覧の部品を借りて独自の画面に表示する MOD（BeatSaberPlus の Multiplayer+ など）でも、同じ部品を操作して選ぶ。</para>
+    /// <para>選曲画面が開いておらず、メインメニューにいるときだけ、ソロの選曲画面を開くときの状態として曲を渡す。
+    /// 他の画面（マルチプレイのロビーなど）が開いているときにソロの選曲画面を重ねると、画面の流れが壊れて操作できなくなるため、何もしない。</para>
     /// <para>開いている画面は次の順に操作する:
     /// カテゴリーのセグメントをカスタム曲にする → カスタム曲の一覧を作り直す（<c>UpdateCustomSongs</c>）→
     /// パックの一覧でパックを選ぶ → 曲の表で曲を選ぶ。
@@ -29,18 +32,46 @@ namespace TTVStreamersKit.Requests
 
         private const BindingFlags AnyInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
+        /// <summary>
+        /// 今の画面から曲を選べるか。選曲画面が開いているか、メインメニューにいれば選べる。
+        /// それ以外（マルチプレイのロビーなど）でソロの選曲画面を重ねると、画面の流れが壊れて操作できなくなる。
+        /// </summary>
+        public static bool CanShow()
+        {
+            var main = BeatSaberUI.MainFlowCoordinator;
+            if (main == null) {
+                return false;
+            }
+            if (FindSongList(main) != null) {
+                return true;
+            }
+            // キューの画面を閉じた後に見える画面で判定する
+            var youngest = main.YoungestChildFlowCoordinatorOrSelf();
+            var below = youngest is QueueFlowCoordinator queue ? queue.Parent : youngest;
+            if (below != main) {
+                Plugin.Log.Warn($"Requests: no song selection screen is open ({below?.GetType().Name ?? "nothing"}).");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>曲を選ぶ。先に <see cref="CanShow"/> で選べることを確かめる。</summary>
         public static void Show(BeatmapLevel level, bool wip)
         {
             ClearBetterSongListFilter();
 
             var main = BeatSaberUI.MainFlowCoordinator;
-            var solo = main.GetField<SoloFreePlayFlowCoordinator, MainFlowCoordinator>("_soloFreePlayFlowCoordinator");
+            var songList = FindSongList(main);
             Action select = () => {
-                if (solo.isActivated) {
-                    CoroutineHost.Run(SelectInOpenList(solo, level, wip));
+                if (songList != null && songList.isActivated) {
+                    CoroutineHost.Run(SelectInOpenList(songList, level, wip));
+                }
+                else if (main.YoungestChildFlowCoordinatorOrSelf() == main) {
+                    var solo = main.GetField<SoloFreePlayFlowCoordinator, MainFlowCoordinator>("_soloFreePlayFlowCoordinator");
+                    Present(main, solo, level, wip);
                 }
                 else {
-                    Present(main, solo, level, wip);
+                    Plugin.Log.Warn("Requests: the song selection screen was closed before the song was selected.");
                 }
             };
 
@@ -53,10 +84,32 @@ namespace TTVStreamersKit.Requests
             }
         }
 
-        /// <summary>開いている選曲画面で、カスタム曲（WIP なら WIP）のパックを開き、曲を選ぶ。</summary>
-        private static IEnumerator SelectInOpenList(SoloFreePlayFlowCoordinator solo, BeatmapLevel level, bool wip)
+        /// <summary>
+        /// 開いている曲の一覧の部品。メインから子の画面の流れをたどり、一番奥のものを返す。
+        /// <list type="bullet">
+        /// <item>ゲームの選曲画面（ソロ、パーティー、マルチプレイ）は、その画面が持つ部品。</item>
+        /// <item>部品を借りて中央に表示している MOD の画面（Multiplayer+ など）は、中央に表示している部品。</item>
+        /// </list>
+        /// 上に別の画面（キューの画面など）が重なっていても見つける。
+        /// 子の画面を出している間は親の画面は非アクティブになるため、アクティブかどうかは見ない（子の画面の流れにあれば開いている）。
+        /// </summary>
+        private static LevelSelectionNavigationController FindSongList(MainFlowCoordinator main)
         {
-            var navigation = solo.GetField<LevelSelectionNavigationController, LevelSelectionFlowCoordinator>("levelSelectionNavigationController");
+            LevelSelectionNavigationController found = null;
+            for (FlowCoordinator flow = main; flow != null; flow = flow.childFlowCoordinator) {
+                if (flow is LevelSelectionFlowCoordinator selection) {
+                    found = selection.GetField<LevelSelectionNavigationController, LevelSelectionFlowCoordinator>("levelSelectionNavigationController");
+                }
+                else if (flow.topViewController is LevelSelectionNavigationController borrowed) {
+                    found = borrowed;
+                }
+            }
+            return found;
+        }
+
+        /// <summary>開いている曲の一覧で、カスタム曲（WIP なら WIP）のパックを開き、曲を選ぶ。</summary>
+        private static IEnumerator SelectInOpenList(LevelSelectionNavigationController navigation, BeatmapLevel level, bool wip)
+        {
             var filtering = navigation.GetField<LevelFilteringNavigationController, LevelSelectionNavigationController>("_levelFilteringNavigationController");
             var collection = navigation.GetField<LevelCollectionNavigationController, LevelSelectionNavigationController>("_levelCollectionNavigationController");
             var pack = wip ? Loader.WIPLevelsPack : Loader.CustomLevelsPack;
@@ -67,6 +120,7 @@ namespace TTVStreamersKit.Requests
 
             // すでにカスタム曲のパックを開いていても、毎回この手順を通す。
             // 未所持曲をダウンロードしたあとは、開いている一覧が古い中身のままで、新しい曲が入っていないため
+            // （マルチプレイでカスタム曲のカテゴリーがない場合は、ここで警告を出し、以降のパックの切り替えで止まる）
             SelectCategoryCell(filtering, SelectLevelCategoryViewController.LevelCategory.CustomSongs);
 
             // カスタム曲の一覧を作り直す。作り直しが終わるまで待つ
@@ -197,7 +251,7 @@ namespace TTVStreamersKit.Requests
         private static string CurrentPackId(LevelCollectionNavigationController collection) =>
             collection.GetField<BeatmapLevelPack, LevelCollectionNavigationController>("_levelPack")?.packID;
 
-        /// <summary>選曲画面が開いていないとき。開くときの状態として、カテゴリー・パック・曲を渡す。</summary>
+        /// <summary>選曲画面が開いておらず、メインメニューにいるとき。ソロの選曲画面を、開くときの状態としてカテゴリー・パック・曲を渡して開く。</summary>
         private static void Present(MainFlowCoordinator main, SoloFreePlayFlowCoordinator solo, BeatmapLevel level, bool wip)
         {
             var pack = wip ? Loader.WIPLevelsPack : Loader.CustomLevelsPack;

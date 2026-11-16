@@ -51,6 +51,7 @@ namespace TTVStreamersKit.Chat
         private Material _chatMoverMaterial;
         private ImageView _bg;
         private bool _isInGame;
+        private bool _enteredGame;
         private bool _inChatScene = true;
         private bool _updateMessagePositions;
         private bool _started;
@@ -94,6 +95,7 @@ namespace TTVStreamersKit.Chat
 
             _config.OnConfigChanged += this.OnConfigChanged;
             SceneManager.activeSceneChanged += this.OnActiveSceneChanged;
+            SoloSelectionPatch.Activated += this.OnSoloSelectionActivated;
             var chat = TTVCoreApi.Chat;
             chat.TimelineItemReceived += this.OnTimelineItem;
             chat.MessageDeleted += this.OnMessageDeleted;
@@ -438,13 +440,44 @@ namespace TTVStreamersKit.Chat
                     visible = (VisibilityLayer)layer;
                     break;
             }
+            // SetLayer は子に及ばない。描画するかどうかはキャンバスごとのレイヤーで決まるため、
+            // 入れ子のキャンバス（この画面、設定のモーダルなど）にも合わせる
             if (_chatScreen) {
                 _chatScreen.gameObject.SetLayer(visible);
+                foreach (var canvas in _chatScreen.GetComponentsInChildren<Canvas>(true)) {
+                    canvas.gameObject.SetLayer(visible);
+                }
             }
             if (_settingsModalGameObject) {
                 _settingsModalGameObject.SetLayer(visible);
+                foreach (var canvas in _settingsModalGameObject.GetComponentsInChildren<Canvas>(true)) {
+                    canvas.gameObject.SetLayer(visible);
+                }
             }
             this.gameObject.SetLayer(visible);
+            _appliedLayer = this.gameObject.layer;
+        }
+
+        // ApplyLayer で最後に設定した、この画面のキャンバスのレイヤー
+        private int _appliedLayer = -1;
+
+        /// <summary>
+        /// この画面のキャンバスのレイヤーが、ほかの MOD などに書き換えられていたら設定し直す。
+        /// 起動直後のメニューで UI のレイヤーに戻され、デスクトップ非表示でも歯車だけが映ることがあったため。
+        /// ソロの曲選択に入ったときと、ゲームのシーンから戻ったときにだけ確認する。
+        /// </summary>
+        private void RestoreLayerIfChanged()
+        {
+            if (_chatScreen == null || _appliedLayer < 0 || this.gameObject.layer == _appliedLayer) {
+                return;
+            }
+            Plugin.Log.Debug($"Chat: layer was changed from {_appliedLayer} to {this.gameObject.layer}, applying again");
+            this.ApplyLayer();
+        }
+
+        private void OnSoloSelectionActivated()
+        {
+            this.RestoreLayerIfChanged();
         }
 
         /// <summary>BSIPA は値の変更ごとに呼ぶ。ファイルの変更では別のスレッドから届くため、メインスレッドで後から反映する。</summary>
@@ -494,6 +527,14 @@ namespace TTVStreamersKit.Chat
             if (_chatScreen == null) {
                 return;
             }
+            // 切り替わる前のシーンは読み込みの都合で名前が取れないことがあるため、ゲームに入ったことを覚えておく
+            if (next.name == GameScene) {
+                _enteredGame = true;
+            }
+            else if (next.name == MenuScene && _enteredGame) {
+                _enteredGame = false;
+                this.RestoreLayerIfChanged();
+            }
             _inChatScene = next.name == GameScene || next.name == MenuScene;
             if (!_inChatScene) {
                 _isInGame = false;
@@ -535,6 +576,7 @@ namespace TTVStreamersKit.Chat
                 if (_started) {
                     _config.OnConfigChanged -= this.OnConfigChanged;
                     SceneManager.activeSceneChanged -= this.OnActiveSceneChanged;
+                    SoloSelectionPatch.Activated -= this.OnSoloSelectionActivated;
                     var chat = TTVCoreApi.Chat;
                     chat.TimelineItemReceived -= this.OnTimelineItem;
                     chat.MessageDeleted -= this.OnMessageDeleted;

@@ -26,6 +26,8 @@ namespace TTVStreamersKit
             Localization.Apply(Config.Language);
             // 曲の開始を捕まえる（!link の「プレイした曲」）
             LevelStartPatch.Apply();
+            // ソロの曲選択に入ったときを捕まえる（チャット表示のレイヤーの確認）
+            Chat.SoloSelectionPatch.Apply();
             zenjector.Install(Location.App, container => container.BindInstance(Config).AsSingle());
             zenjector.Install<AppInstaller>(Location.App);
             zenjector.Install<MenuInstaller>(Location.Menu);
