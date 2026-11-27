@@ -70,7 +70,10 @@ namespace TTVStreamersKit.Chat
             _scrollbarRect.SetParent(_chatScreen.transform, false);
             _scrollbarRect.anchorMin = _scrollbarRect.anchorMax = new Vector2(0.5f, 0.5f);
             _scrollbarRect.pivot = new Vector2(0.5f, 0.5f);
-            _scrollbar.AddComponent<Canvas>();
+            // BSML がキャンバスを作るとき（CreateViewController、FloatingScreen）と同じく、TexCoord2 を頂点に渡す。
+            // ゲームの UI のシェーダーは TexCoord2 から曲面の値を読んで横方向の位置を決めるため、渡さないと横に崩れて描かれる
+            var canvas = _scrollbar.AddComponent<Canvas>();
+            canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
             BeatSaberUI.DiContainer.InstantiateComponent<VRGraphicRaycaster>(_scrollbar);
 
             // 当たり判定は見た目より広くする（ほぼ透明）
@@ -200,7 +203,6 @@ namespace TTVStreamersKit.Chat
             if (_scrollbar.activeSelf != visible) {
                 _scrollbar.SetActive(visible);
             }
-            this.ScrollDiagOnUpdate(visible);
             if (!visible) {
                 return;
             }
