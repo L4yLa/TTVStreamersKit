@@ -347,6 +347,7 @@ namespace TTVStreamersKit.Chat
                 if (_chatScreen != null) {
                     _chatScreen.ShowHandle = value;
                 }
+                this.UpdateScrollTarget();
             }
         }
 

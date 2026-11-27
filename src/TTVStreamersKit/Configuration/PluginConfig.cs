@@ -5,6 +5,7 @@ using TTVStreamersKit.Emotes;
 using TTVStreamersKit.Requests;
 using TTVStreamersKit.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -72,6 +73,14 @@ namespace TTVStreamersKit.Configuration
         [UseConverter(typeof(EnumConverter<LayerType>))]
         public virtual LayerType Layer { get; set; } = LayerType.UI;
         public virtual int UILayer { get; set; } = 5;
+
+        /// <summary>
+        /// 無視するユーザーのログイン名（大文字と小文字は区別しない）。自分や bot などを想定する。
+        /// チャットの表示、エモートの演出、リクエストのコマンド、通知のすべてで無視する。設定ファイルでのみ指定する。
+        /// </summary>
+        [NonNullable]
+        [UseConverter(typeof(ListConverter<string>))]
+        public virtual List<string> IgnoredUsers { get; set; } = new List<string>();
 
         /// <summary>値が変わった（ファイルの変更を含む）。</summary>
         public event Action OnConfigChanged;

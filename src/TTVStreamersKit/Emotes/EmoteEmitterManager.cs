@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TTVCore.Api.V1;
 using TTVStreamersKit.Configuration;
 using TTVStreamersKit.Emotes.Styles;
+using TTVStreamersKit.Utilities;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
@@ -102,7 +103,7 @@ namespace TTVStreamersKit.Emotes
 
         private void OnMessage(ChatMessage message)
         {
-            if (!this.IsActive || message?.Fragments == null) {
+            if (!this.IsActive || message?.Fragments == null || IgnoredUsers.IsIgnored(message)) {
                 return;
             }
             Dictionary<ImageKey, int> counts = null;
@@ -124,7 +125,7 @@ namespace TTVStreamersKit.Emotes
         private void OnBitsUsed(BitsUseNotification n)
         {
             if (!this.IsActive || !this.C.Celebration || n == null
-                || n.PowerUp != PowerUpType.Celebration || !n.PowerUpEmoteImage.IsValid) {
+                || n.PowerUp != PowerUpType.Celebration || !n.PowerUpEmoteImage.IsValid || IgnoredUsers.Contains(n.User)) {
                 return;
             }
             // 表示数の倍率と1メッセージの上限は掛けない

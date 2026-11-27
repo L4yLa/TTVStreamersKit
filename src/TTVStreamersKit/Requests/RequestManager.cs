@@ -122,7 +122,8 @@ namespace TTVStreamersKit.Requests
 
         private void OnChatMessage(ChatMessage message)
         {
-            if (!_pluginConfig.RequestEnabled || message?.Sender == null || string.IsNullOrEmpty(message.Text)) {
+            if (!_pluginConfig.RequestEnabled || message?.Sender == null || string.IsNullOrEmpty(message.Text)
+                || IgnoredUsers.IsIgnored(message)) {
                 return;
             }
             if (message.Source != null && !_config.AcceptSharedChatCommands) {
