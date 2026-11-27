@@ -200,6 +200,7 @@ namespace TTVStreamersKit.Chat
             if (_scrollbar.activeSelf != visible) {
                 _scrollbar.SetActive(visible);
             }
+            this.ScrollDiagOnUpdate(visible);
             if (!visible) {
                 return;
             }

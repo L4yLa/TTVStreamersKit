@@ -359,6 +359,7 @@ namespace TTVStreamersKit.Chat
 
         private void LateUpdate()
         {
+            this.ScrollDiagTick();
             foreach (var view in _messages) {
                 if (view == null) {
                     continue;
