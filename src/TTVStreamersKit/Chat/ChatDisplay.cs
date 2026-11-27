@@ -145,14 +145,17 @@ namespace TTVStreamersKit.Chat
             }
         }
 
+        /// <summary>
+        /// チャット全体のクリア（Twitch の /clear など）。チャット欄を空にし、作り直し用の履歴と削除の記録も消す。
+        /// メッセージの削除・タイムアウト・BAN（削除の表示にする）とは別の扱い。
+        /// </summary>
         private void OnChatCleared(ChatClearedEvent e)
         {
-            foreach (var id in HistoryMessageIds(m => true)) {
-                MarkDeleted(id);
-            }
-            foreach (var view in _messages.Where(v => v.Line?.MessageId != null).ToList()) {
-                this.ShowDeleted(view);
-            }
+            s_history.Clear();
+            s_deleted.Clear();
+            s_deletedOrder.Clear();
+            this.ClearAll();
+            this.ScrollToLatest();
         }
 
         private static IEnumerable<string> HistoryMessageIds(Func<ChatMessage, bool> predicate)
