@@ -24,6 +24,7 @@ namespace TTVStreamersKit
             Version = typeof(Plugin).Assembly.GetName().Version.ToString(3);
             Config = config.Generated<PluginConfig>();
             Localization.Apply(Config.Language);
+            IgnoredUsers.Initialize(Config);
             // 曲の開始を捕まえる（!link の「プレイした曲」）
             LevelStartPatch.Apply();
             // ソロの曲選択に入ったときを捕まえる（チャット表示のレイヤーの確認）

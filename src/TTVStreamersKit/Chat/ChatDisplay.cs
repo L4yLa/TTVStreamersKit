@@ -28,10 +28,9 @@ namespace TTVStreamersKit.Chat
 
         private const string MenuScene = "MainMenu";
         private const string GameScene = "GameCore";
-        // メニューの作り直しで表示を戻すために残す件数
-        private const int HistoryLimit = 100;
+        // 表示とスクロールのために持つ件数。メニューの作り直しで表示を戻すための履歴も同じ件数を残す
+        private const int BufferLimit = 100;
         private const int DeletedLimit = 500;
-        private const int ViewLimit = 200;
 
         // メニューの作り直し（設定の変更による再起動など）をまたいで残す
         private static readonly List<TimelineItem> s_history = new List<TimelineItem>();
@@ -56,6 +55,8 @@ namespace TTVStreamersKit.Chat
         private bool _updateMessagePositions;
         private bool _started;
         private bool _disposed;
+        // 表示しているときの、無視するユーザーの指定。変わったら表示を作り直す
+        private string _ignoredSignature;
 
         [Inject]
         public void Construct(PluginConfig config, ChatFontManager fontManager, ChatMessageView.Pool pool)
@@ -90,6 +91,7 @@ namespace TTVStreamersKit.Chat
                 return;
             }
             _started = true;
+            _ignoredSignature = IgnoredUsers.Signature;
             this.SetupScreens();
             ((RectTransform)this.transform).pivot = new Vector2(0.5f, 0f);
 
@@ -110,10 +112,10 @@ namespace TTVStreamersKit.Chat
         private void OnTimelineItem(TimelineItem item)
         {
             s_history.Add(item);
-            if (s_history.Count > HistoryLimit) {
+            if (s_history.Count > BufferLimit) {
                 s_history.RemoveAt(0);
             }
-            if (_config.ChatEnabled) {
+            if (_config.ChatEnabled && !IgnoredUsers.IsIgnored(item)) {
                 this.Show(item);
             }
         }
@@ -143,14 +145,17 @@ namespace TTVStreamersKit.Chat
             }
         }
 
+        /// <summary>
+        /// チャット全体のクリア（Twitch の /clear など）。チャット欄を空にし、作り直し用の履歴と削除の記録も消す。
+        /// メッセージの削除・タイムアウト・BAN（削除の表示にする）とは別の扱い。
+        /// </summary>
         private void OnChatCleared(ChatClearedEvent e)
         {
-            foreach (var id in HistoryMessageIds(m => true)) {
-                MarkDeleted(id);
-            }
-            foreach (var view in _messages.Where(v => v.Line?.MessageId != null).ToList()) {
-                this.ShowDeleted(view);
-            }
+            s_history.Clear();
+            s_deleted.Clear();
+            s_deletedOrder.Clear();
+            this.ClearAll();
+            this.ScrollToLatest();
         }
 
         private static IEnumerable<string> HistoryMessageIds(Func<ChatMessage, bool> predicate)
@@ -201,8 +206,10 @@ namespace TTVStreamersKit.Chat
             this.ApplyStyle(view, line);
             view.SetLine(line, this.TimestampPrefix(view.Timestamp));
             _messages.Add(view);
-            while (_messages.Count > ViewLimit) {
-                this.Despawn(_messages[0]);
+            while (_messages.Count > BufferLimit) {
+                var oldest = _messages[0];
+                this.OnOldestRemoved(oldest != null ? oldest.Height : 0f);
+                this.Despawn(oldest);
             }
             _updateMessagePositions = true;
         }
@@ -225,11 +232,15 @@ namespace TTVStreamersKit.Chat
         private void ReplayHistory()
         {
             this.ClearAll();
+            this.ScrollToLatest();
+            _ignoredSignature = IgnoredUsers.Signature;
             if (!_config.ChatEnabled) {
                 return;
             }
             foreach (var item in s_history) {
-                this.Show(item);
+                if (!IgnoredUsers.IsIgnored(item)) {
+                    this.Show(item);
+                }
             }
         }
 
@@ -319,34 +330,34 @@ namespace TTVStreamersKit.Chat
             _updateMessagePositions = true;
         }
 
+        /// <summary>
+        /// 新しいものから順に並べる。表示の範囲から出たものも消さずに持ち、件数の上限（BufferLimit）を超えたときだけ古いものから消す。
+        /// 高さは描画の直前に決まり、ここでは前の値のことがあるため、位置で消すと表示できるものまで消してしまう。
+        /// 範囲の外のものは RectMask2D が描画しない。
+        /// </summary>
         private void UpdateMessagePositions()
         {
+            _messages.RemoveAll(v => v == null);
+            var total = 0f;
+            foreach (var view in _messages) {
+                total += view.Height;
+            }
+            var offset = this.ResolveScrollOffset(total);
             var height = this.ChatHeight;
-            var pos = height / (this.ReverseChatOrder ? 2f : -2f);
-            var remove = new List<ChatMessageView>();
+            // 最新の側の端から並べる。スクロールした分だけ最新の側の端を枠の外へずらす
+            var pos = this.ReverseChatOrder ? height / 2f + offset : -height / 2f - offset;
             for (var i = _messages.Count - 1; i >= 0; i--) {
                 var view = _messages[i];
-                if (view == null) {
-                    remove.Add(view);
-                    continue;
-                }
                 var h = view.Height;
                 if (this.ReverseChatOrder) {
                     pos -= h;
                 }
                 view.transform.localPosition = new Vector3(0, pos);
-                // 表示範囲から完全に出たものは片付ける
-                var outside = this.ReverseChatOrder ? pos + h < -height / 2f : pos >= height / 2f;
-                if (outside) {
-                    remove.Add(view);
-                }
                 if (!this.ReverseChatOrder) {
                     pos += h;
                 }
             }
-            foreach (var view in remove) {
-                this.Despawn(view);
-            }
+            this.UpdateScrollbar();
         }
 
         private void LateUpdate()
@@ -407,7 +418,6 @@ namespace TTVStreamersKit.Chat
 
             _bg = _chatScreen.GetComponentsInChildren<ImageView>().FirstOrDefault(x => x.name == "Background");
             if (_bg != null) {
-                _bg.raycastTarget = false;
                 _bg.material = Instantiate(_bg.material);
 #if BS_1_40_8
                 _bg.SetField("_gradient", false);
@@ -417,6 +427,9 @@ namespace TTVStreamersKit.Chat
                 _bg.material.color = Color.white;
                 _bg.SetAllDirty();
             }
+            this.SetupScroll();
+            // スクロールバーのキャンバスにもレイヤーを合わせる
+            this.ApplyLayer();
             this.UpdateChatUI();
             this.UpdateRootActive();
         }
@@ -542,6 +555,9 @@ namespace TTVStreamersKit.Chat
                 return;
             }
             _isInGame = next.name == GameScene;
+            if (_isInGame) {
+                this.ScrollToLatest();
+            }
             foreach (var canvas in _chatScreen.GetComponentsInChildren<Canvas>(true)) {
                 canvas.sortingOrder = _isInGame ? 0 : 3;
             }
@@ -555,6 +571,9 @@ namespace TTVStreamersKit.Chat
                 return;
             }
             this.Load();
+            if (_started && _ignoredSignature != IgnoredUsers.Signature) {
+                this.ReplayHistory();
+            }
             _chatContainer.GetComponent<RectMask2D>().rectTransform.sizeDelta = new Vector2(this.ChatWidth, this.ChatHeight);
             _chatScreen.Handle.transform.localScale = new Vector3(this.ChatWidth, this.ChatHeight * 0.9f, 0.01f);
             _chatScreen.Handle.transform.localPosition = Vector3.zero;

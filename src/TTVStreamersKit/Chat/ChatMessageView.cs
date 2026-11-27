@@ -95,6 +95,16 @@ namespace TTVStreamersKit.Chat
             }
         }
 
+        /// <summary>
+        /// 高さを 0 に戻す。高さは描画の直前（LateUpdate の後）に決まるため、出した直後の高さは前の値のままになる。
+        /// 新しく作った部品は 100（RectTransform の初期値）、使い回した部品は前の内容の高さになり、
+        /// 一瞬だけ実際より大きく並べてしまうため、0 から始める。
+        /// </summary>
+        private void ResetHeight()
+        {
+            this.RectTransform.sizeDelta = new Vector2(this.RectTransform.sizeDelta.x, 0f);
+        }
+
         private void ReleaseBindings()
         {
             _mainBinding?.Dispose();
@@ -141,6 +151,7 @@ namespace TTVStreamersKit.Chat
                 accentRect.sizeDelta = new Vector2(1, 10);
 
                 item.RectTransform.pivot = new Vector2(0.5f, 0f);
+                item.ResetHeight();
                 item.SubTextEnabled = false;
                 item.HighlightEnabled = false;
                 item.AccentEnabled = false;
@@ -168,6 +179,7 @@ namespace TTVStreamersKit.Chat
                 item.SubTextEnabled = false;
                 item.Text.text = "";
                 item.SubText.text = "";
+                item.ResetHeight();
                 base.OnDespawned(item);
             }
 
