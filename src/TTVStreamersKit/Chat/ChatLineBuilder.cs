@@ -263,10 +263,13 @@ namespace TTVStreamersKit.Chat
             return SystemLine(adText, highlight: false);
         }
 
-        /// <summary>サブスク、ギフト、レイド、アナウンスなど。チャット上の通知の文言を優先する。</summary>
+        /// <summary>
+        /// サブスク、ギフト、レイド、アナウンスなど。文言は設定の言語で作る（NoticeText）。
+        /// Twitch の文言（SystemMessage）は英語でしか届かないため使わない。チャット上の通知が届かなかったときは、通知の側から作る。
+        /// </summary>
         private static ChatLine Notice(TimelineNotification n)
         {
-            var text = n.Notice?.SystemMessage;
+            var text = NoticeText.Compose(n.Notice);
             if (string.IsNullOrEmpty(text)) {
                 text = ComposeNoticeText(n);
             }
